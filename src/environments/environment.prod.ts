@@ -5,4 +5,7 @@
  */
 export const environment = {
   production: true,
+
+  auth: { url: 'https://dev-965067.oktapreview.com', issuer: 'default' },
+  clientId: '0oad8oso7zYH0gCpQ0h7',
 };

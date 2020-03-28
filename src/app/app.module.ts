@@ -21,6 +21,9 @@ import {
   NbWindowModule,
 } from '@nebular/theme';
 
+import { AuthGuardService } from './@auth/auth-guard.service';
+
+
 @NgModule({
   declarations: [AppComponent],
   imports: [
@@ -43,6 +46,9 @@ import {
     CoreModule.forRoot(),
   ],
   bootstrap: [AppComponent],
+  providers: [
+    AuthGuardService,
+  ],
 })
 export class AppModule {
 }
