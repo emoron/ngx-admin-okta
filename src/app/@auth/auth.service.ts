@@ -9,7 +9,8 @@
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 
 import { Injectable } from '@angular/core';
-import { OAuthService, JwksValidationHandler } from 'angular-oauth2-oidc';
+import { OAuthService } from 'angular-oauth2-oidc';
+import { JwksValidationHandler } from 'angular-oauth2-oidc-jwks';
 import { Router } from '@angular/router';
 import * as OktaAuth from '@okta/okta-auth-js';
 import { authConfig } from './oauth2.config';
