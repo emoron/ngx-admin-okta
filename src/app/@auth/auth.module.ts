@@ -13,6 +13,7 @@ import {
   NbInputModule
 } from '@nebular/theme';
 import { LoginComponent } from './login/login.component';
+import { OAuthModule } from 'angular-oauth2-oidc';
 
 @NgModule({
   declarations: [LoginComponent],
@@ -27,6 +28,8 @@ import { LoginComponent } from './login/login.component';
     AuthRoutingModule,
 
     NbAuthModule,
+
+    OAuthModule.forRoot(),
   ],
 })
 export class AuthModule { }

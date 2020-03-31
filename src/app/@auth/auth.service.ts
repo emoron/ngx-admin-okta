@@ -11,7 +11,7 @@
 import { Injectable } from '@angular/core';
 import { OAuthService } from 'angular-oauth2-oidc';
 import { JwksValidationHandler } from 'angular-oauth2-oidc-jwks';
-import { Router } from '@angular/router';
+import { Router, NavigationExtras } from '@angular/router';
 import * as OktaAuth from '@okta/okta-auth-js';
 import { authConfig } from './oauth2.config';
 import { of as observableOf } from 'rxjs';
@@ -35,19 +35,20 @@ export class AuthService {
     );
 
   }
-
+  
   configureWithNewConfigApi() {
+
     this.oauthService.configure(authConfig);
     this.oauthService.tokenValidationHandler = new JwksValidationHandler();
     this.oauthService.loadDiscoveryDocumentAndTryLogin();
   }
-
+  
   /**
    * A Promise is an object representing the eventual completion or failure of an asynchronous operation.
    */
   login(username: string, password: string): Promise<any> {
 
-    return this.oauthService.loadDiscoveryDocument().then((doc) => {
+    return this.oauthService.loadDiscoveryDocument().then(() => {
       return this.oauthService.createAndSaveNonce().then(nonce => {
         /** Primary Authentication https://${yourOktaDomain}/api/v1/authn
          * POST /api/v1/authn
@@ -74,22 +75,32 @@ export class AuthService {
                * you can obtain a token or tokens without prompting the user to log in.
                */
               clientId: this.oauthService.clientId,
+
               // Use an array if specifying multiple response types - in this case,
               // the response will contain both an ID Token and an Access Token.
               responseType: ['id_token', 'token'],
+              // If pkce is true, both the access and ID token will be requested and this option will be ignored.
+              // Default value is true. If set to false, the authorization flow will use the Implicit OAuth Flow.
+              pkce: false,
+
+              // Meanwhile using Code Flow instead is a best practice and with OAuth 2.1 implicit flow will be deprecated*.
+
               scopes: ['openid', 'profile', 'email', 'groups'], // this.oauthService.scope,
               sessionToken: response.sessionToken,
               nonce: nonce,
               redirectUri: window.location.origin
             }) // Once you have retrieved an id_token and access_token.
-              .then((tokens) => {
-                const idToken = tokens[0].idToken;
-                const accessToken = tokens[1].accessToken;
+              .then((res) => {
+                const idToken = res.tokens.idToken.value;
+                // console.debug(idToken);
+                const accessToken = res.tokens.accessToken.value;
+                // console.debug(accessToken);
 
                 // parses and stores the idToken and accessToken so they can be retrieved using OAuthService.getIdToken() and OAuthService.getAccessToken()
                 const keyValuePair = `#id_token=${encodeURIComponent(idToken)}&access_token=${encodeURIComponent(accessToken)}`;
+                // console.debug(keyValuePair);
 
-                /** https://${yourOktaDomain}m/oauth2/default/v1/token
+                /** https://${yourOktaDomain}/oauth2/default/v1/token
                 * Checks whether there are tokens in the hash fragment as a result of the implicit flow. 
                 * These tokens are parsed, validated and used to sign the user in to the current client.
                 */
@@ -107,9 +118,9 @@ export class AuthService {
   }
 
   logOut(): void {
-    console.log("Succesfully logged out");
+    
     this.oauthService.logOut();
-
+    console.log("Succesfully logged out");
     this.router.navigate(['/auth/login'] /*, navigationExtras */);
   }
 
@@ -121,20 +132,21 @@ export class AuthService {
 
     // Store the attempted URL for redirecting
     this.redirectUrl = url;
-    /*
+    
     // Get idToken and accessToken
     let idToken = this.oauthService.getIdToken();
     let accessToken = this.oauthService.getAccessToken();
  
     // Set our navigation extras object
     // that contains our global query params and fragment
+    /*
     let navigationExtras: NavigationExtras = {
         queryParams: { 'id_token': idToken, 'access_token': accessToken },
         fragment: 'anchor'
     };
     */
     // Navigate to the login page with extras
-    this.router.navigate(['/auth/login'] /*, navigationExtras */);
+    this.router.navigate(['/auth/login'] /* , navigationExtras*/);
 
     return false;
   }
@@ -158,14 +170,12 @@ export class AuthService {
     return claims['email'];
   }
 
-
   public get groups() {
     const claims = this.oauthService.getIdentityClaims();
     if (!claims)
       return null;
     return claims['groups'];
   }
-
 
   public getAccessToken() {
     return this.oauthService.getAccessToken();

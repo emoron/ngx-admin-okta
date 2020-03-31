@@ -16,8 +16,11 @@ const routes: Routes = [
   {
     path: 'pages',
     canActivate: [AuthGuardService], // we tell Angular to check the access
+    /*
     loadChildren: () => import('app/pages/pages.module')
       .then(m => m.PagesModule),
+    */
+   loadChildren: './pages/pages.module#PagesModule'
   },
   {
     path: 'auth',
